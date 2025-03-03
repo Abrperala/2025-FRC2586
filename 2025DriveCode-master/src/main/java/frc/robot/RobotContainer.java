@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController; 
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -50,12 +50,11 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.WristSubSystem;
 import frc.robot.subsystems.WristSubSystem.WristPosition;
 
-
 public class RobotContainer {
 
-
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -66,7 +65,8 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    //private final CommandXboxController driverJoystick = new CommandXboxController(0);
+    // private final CommandXboxController driverJoystick = new
+    // CommandXboxController(0);
     private final PS4Controller driverJoystick = new PS4Controller(0);
     private final PS4Controller operatorJoystick = new PS4Controller(1);
 
@@ -76,19 +76,16 @@ public class RobotContainer {
     private final RampSubSystem rampSubsystem = new RampSubSystem();
     private final Shooter shooter = new Shooter();
 
-
-
     public RobotContainer() {
         configureBindings();
     }
 
-    private double squareInput(double input){
-        boolean negative = input  < 0;
-        if (negative){
-            return -Math.pow(input,2);
-        }
-        else{
-            return Math.pow(input,2);
+    private double squareInput(double input) {
+        boolean negative = input < 0;
+        if (negative) {
+            return -Math.pow(input, 2);
+        } else {
+            return Math.pow(input, 2);
         }
     }
 
@@ -96,144 +93,144 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-.7*squareInput(driverJoystick.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-.7*squareInput(driverJoystick.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-.7*squareInput(driverJoystick.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain
+                        .applyRequest(() -> drive.withVelocityX(-.7 * squareInput(driverJoystick.getLeftY()) * MaxSpeed) // Drive
+                                                                                                                         // forward
+                                                                                                                         // with
+                                                                                                                         // negative
+                                                                                                                         // Y
+                                                                                                                         // (forward)
+                                .withVelocityY(-.7 * squareInput(driverJoystick.getLeftX()) * MaxSpeed) // Drive left
+                                                                                                        // with negative
+                                                                                                        // X (left)
+                                .withRotationalRate(-.7 * squareInput(driverJoystick.getRightX()) * MaxAngularRate) // Drive
+                                                                                                                    // counterclockwise
+                                                                                                                    // with
+                                                                                                                    // negative
+                                                                                                                    // X
+                                                                                                                    // (left)
+                        ));
 
-        /*                        
+        /*
          * DRIVER CONTROLLER BINDINGS
-        */
+         */
 
         new JoystickButton(driverJoystick, 2).whileTrue(drivetrain.applyRequest(() -> brake));
-        new JoystickButton(driverJoystick, 3).whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-driverJoystick.getLeftY(), -driverJoystick.getLeftX()))
-        ));
+        new JoystickButton(driverJoystick, 3).whileTrue(drivetrain.applyRequest(() -> point
+                .withModuleDirection(new Rotation2d(-driverJoystick.getLeftY(), -driverJoystick.getLeftX()))));
 
+        // reset the field-centric heading on share button press
+        new JoystickButton(driverJoystick, 9).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // reset the field-centric heading on left bumper press
-        new JoystickButton(driverJoystick, 5).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        // Driver Left Bumper bind to strafe left TODO: check if actually moves left
+        new JoystickButton(driverJoystick, 5).onTrue(
+                drivetrain
+                        .applyRequest(() -> drive.withVelocityX(0) // Drive
+                                                                   // forward
+                                                                   // with
+                                                                   // negative
+                                                                   // Y
+                                                                   // (forward)
+                                .withVelocityY(-.2 * MaxSpeed) // Drive left
+                                // with negative
+                                // X (left)
+                                .withRotationalRate(0) // Drive
+                                                       // counterclockwise
+                                                       // with
+                                                       // negative
+                                                       // X
+                                                       // (left)
+                        ));
+
+        // Driver Right Bumper bind to strafe right TODO: check if actually moves right
+        new JoystickButton(driverJoystick, 6).onTrue(
+                drivetrain
+                        .applyRequest(() -> drive.withVelocityX(0) // Drive
+                                                                   // forward
+                                                                   // with
+                                                                   // negative
+                                                                   // Y
+                                                                   // (forward)
+                                .withVelocityY(.2 * MaxSpeed) // Drive left
+                                // with negative
+                                // X (left)
+                                .withRotationalRate(0) // Drive
+                                                       // counterclockwise
+                                                       // with
+                                                       // negative
+                                                       // X
+                                                       // (left)
+                        ));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        /*                        
+        /*
          * SYSID
-        */
+         */
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        // new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick, 4)).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        // new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick, 1)).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        // new JoystickButton(driverJoystick, 10).and( new JoystickButton(driverJoystick, 4)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        // new JoystickButton(driverJoystick, 10).and( new JoystickButton(driverJoystick, 1)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        // new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick,
+        // 4)).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick,
+        // 1)).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // new JoystickButton(driverJoystick, 10).and( new
+        // JoystickButton(driverJoystick,
+        // 4)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // new JoystickButton(driverJoystick, 10).and( new
+        // JoystickButton(driverJoystick,
+        // 1)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-
-        /*                        
+        /*
          * OPERATOR CONTROLLER BINDINGS
-        */
+         */
 
-        //Bind Operator X button to intake Coral directly to shooter
+        // Bind Operator X button to intake Coral directly to shooter
         new POVButton(operatorJoystick, 270).onTrue(
-            new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new AdvToShooter(shooter),
-                    new StartRampWheel(rampSubsystem)),
-                new ParallelCommandGroup(
-                    new StopRampWheel(rampSubsystem),
-                    new StartShooterWheel(shooter)),
-                new WaitCommand(.1),
-                new StopShooterWheel(shooter)));
+                new SequentialCommandGroup(
+                        new PIDElevator(ElevatorPosition.Home, elevatorSubsystem),
+                        new ParallelCommandGroup(
+                                new AdvToShooter(shooter),
+                                new StartRampWheel(rampSubsystem)),
+                        new ParallelCommandGroup(
+                                new StopRampWheel(rampSubsystem),
+                                new StartShooterWheel(shooter)),
+                        new WaitCommand(.1),
+                        new StopShooterWheel(shooter)));
 
-        //Bind Operator circle button to shoot L1
+        // Binds Operator right bumper button to stop intaking
+        new POVButton(operatorJoystick, 6).onTrue(
+                new ParallelCommandGroup(
+                        new StopRampWheel(rampSubsystem),
+                        new StopShooterWheel(shooter)));
+
+        // Bind Operator circle button to shoot L1
         new JoystickButton(operatorJoystick, 3).onTrue(
                 new PIDElevator(ElevatorPosition.L1, elevatorSubsystem));
 
-        //Bind Operator cross button to shoot L2
+        // Bind Operator cross button to shoot L2
         new JoystickButton(operatorJoystick, 2).onTrue(
                 new PIDElevator(ElevatorPosition.L2, elevatorSubsystem));
 
-        //Bind Operator square button to shoot L3
+        // Bind Operator square button to shoot L3
         new JoystickButton(operatorJoystick, 1).onTrue(
-            new PIDElevator(ElevatorPosition.L3, elevatorSubsystem));
+                new PIDElevator(ElevatorPosition.L3, elevatorSubsystem));
 
-        //Bind Operator triange button to shoot L4 *****JUST USE TOP LIMIT SWITCH*******
-        //Bind Operator square button to shoot L3
+        // Bind Operator triange button to shoot L4
         new JoystickButton(operatorJoystick, 4).onTrue(
-            new PIDElevator(ElevatorPosition.L4, elevatorSubsystem));
-            
-            new JoystickButton(operatorJoystick, 14).onTrue(
-                new PIDElevator(ElevatorPosition.Home, elevatorSubsystem));
+                new PIDElevator(ElevatorPosition.L4, elevatorSubsystem));
 
-                new JoystickButton(operatorJoystick, 14).onFalse(
-                    new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0)));
-    
-            new JoystickButton(operatorJoystick, 13).onTrue(
+        // Bind Operator touchpad button to Home
+        new JoystickButton(operatorJoystick, 14).onTrue(
+                new SequentialCommandGroup(
+                        new PIDElevator(ElevatorPosition.Home, elevatorSubsystem),
+                        new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0), elevatorSubsystem)));
+
+        // Bind Operator left bumper to shoot coral
+        new JoystickButton(operatorJoystick, 5).onTrue(
                 new ShootCoral(shooter));
 
-
-        // new POVButton(operatorJoystick, 90).onTrue(
-        //     new SequentialCommandGroup(
-        //         //new liftElevToHallEffect(elevatorSubsystem, 1),
-        //         //new angleWrist(WristSubSystem.WristPosition.ALGAEPICKUP),
-        //         new IntakeAlgae(shooter)));
-        //         //new angleWrist(WristSubSystem.WristPosition.HOME),
-        //         //new HomeElevator(elevatorSubsystem)));
-
-        //Bind triggers for elevator.
-        // new JoystickButton(operatorJoystick, 8).whileTrue(new RunCommand(() ->
-        // {
-        //     elevatorSubsystem.setMotorSpeed(0.5*0.1*(1 + operatorJoystick.getRawAxis(4)));
-        //     SmartDashboard.putNumber("Elevator right trigger", operatorJoystick.getRawAxis(4));
-        // }))
-        // .onFalse(new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0)));
-        // new JoystickButton(operatorJoystick, 7).whileTrue(new RunCommand(() -> 
-        // {
-        //     elevatorSubsystem.setMotorSpeed(0.5*-0.1*(1 + operatorJoystick.getRawAxis(3)));
-        //     SmartDashboard.putNumber("Elevator left trigger", operatorJoystick.getRawAxis(3));
-        // }))
-        // .onFalse(new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0)));
-        
-        //Bind buttons for the shooter
-        new JoystickButton(operatorJoystick, 5).whileTrue(new RunCommand(() -> shooter.setShooterSpeed(.4), shooter))
-                                     .whileFalse(new RunCommand(()-> shooter.stopShooter(), shooter));
-        new JoystickButton(operatorJoystick, 6).whileTrue(new RunCommand(() -> shooter.setShooterSpeed(-.4), shooter))
-                                      .whileFalse(new RunCommand(()-> shooter.stopShooter(), shooter));
-        
-        //Bind buttons for the ramp motor
-        // new POVButton(operatorJoystick, 0).whileTrue(new RunCommand(() -> rampSubsystem.setRampSpeed(0.2)))
-        //                     .whileFalse(new RunCommand(() -> rampSubsystem.setRampSpeed(0.0)));
-        
-        // new POVButton(operatorJoystick, 180).whileTrue(new RunCommand(() -> rampSubsystem.setRampSpeed(-0.2)))
-        //                     .whileFalse(new RunCommand(() -> rampSubsystem.setRampSpeed(0.0)));
-        
-        //Test code for wrist with joystick.
-        new JoystickButton(operatorJoystick, 8).whileTrue(new RunCommand(() -> {
-            //run much slower than the input with "0.05*"
-            wristSubsystem.setSpeed(0.1*operatorJoystick.getRawAxis(1));
-            SmartDashboard.putNumber("Wrist Joystick Input", operatorJoystick.getRawAxis(1));
-        }));
-
-      
-
-        //
-        
-        // Bind buttons for the wrist subsystem positions
-        //operatorJoystick.x().whileTrue(new RunCommand(() -> wristSubsystem.setWristPosition(WristPosition.LOW)));
-        //operatorJoystick.a().whileTrue(new RunCommand(() -> wristSubsystem.setWristPosition(WristPosition.MIDDLE)));
-        //operatorJoystick.b().whileTrue(new RunCommand(() -> wristSubsystem.setWristPosition(WristPosition.HIGH)));
-
-        // Bind the Xbox controller triggers to control the elevator
-         // I think I want the TriggerAxis value, not the boolean
-        /* 
-        new Trigger(() -> joystick.getRightTriggerAxis() > 0.1)
-            .whileTrue(new RunCommand(() -> elevatorSubsystem.setMotorSpeed(joystick.getRightTriggerAxis()), elevatorSubsystem));
-
-        new Trigger(() -> joystick.getLeftTriggerAxis() > 0.1)
-            .whileTrue(new RunCommand(() -> elevatorSubsystem.setMotorSpeed(-joystick.getLeftTriggerAxis()), elevatorSubsystem));
-        */
     }
 
     public Command getAutonomousCommand() {
