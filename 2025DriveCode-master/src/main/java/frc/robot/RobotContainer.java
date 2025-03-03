@@ -108,24 +108,28 @@ public class RobotContainer {
          * DRIVER CONTROLLER BINDINGS
         */
 
-        // driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        // driverJoystick.b().whileTrue(drivetrain.applyRequest(() ->
         new JoystickButton(driverJoystick, 2).whileTrue(drivetrain.applyRequest(() -> brake));
         new JoystickButton(driverJoystick, 3).whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-driverJoystick.getLeftY(), -driverJoystick.getLeftX()))
         ));
 
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick, 4)).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick, 1)).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        new JoystickButton(driverJoystick, 10).and( new JoystickButton(driverJoystick, 4)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        new JoystickButton(driverJoystick, 10).and( new JoystickButton(driverJoystick, 1)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
         new JoystickButton(driverJoystick, 5).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        /*                        
+         * SYSID
+        */
+
+        // Run SysId routines when holding back/start and X/Y.
+        // Note that each routine should be run exactly once in a single log.
+        // new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick, 4)).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // new JoystickButton(driverJoystick, 9).and( new JoystickButton(driverJoystick, 1)).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // new JoystickButton(driverJoystick, 10).and( new JoystickButton(driverJoystick, 4)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // new JoystickButton(driverJoystick, 10).and( new JoystickButton(driverJoystick, 1)).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
 
         /*                        
          * OPERATOR CONTROLLER BINDINGS

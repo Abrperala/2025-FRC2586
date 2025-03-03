@@ -29,6 +29,9 @@ public class PIDElevator extends Command {
 
     @Override
     public boolean isFinished() {
+        if ( Math.abs(m_elevator.getEncoder1Position() - m_elevator.TranslateEnum(targetPosition)) < 0.5){
+            return true;
+        }
         return false;
     }
 
