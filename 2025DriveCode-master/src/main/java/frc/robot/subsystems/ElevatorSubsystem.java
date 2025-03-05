@@ -31,35 +31,36 @@ public class ElevatorSubsystem extends SubsystemBase {
     private RelativeEncoder encoder1;
     private RelativeEncoder encoder2;
     private DigitalInput upperLimitSwitch;
-    private DigitalInput lowerLimitSwitch; 
-    private boolean currentisTripped = false;
-    private boolean previousisTripped = false;
+    private DigitalInput lowerLimitSwitch;
     private ProfiledPIDController PIDie;
     private Constraints PIDConstraints;
+
     public enum ElevatorPosition {
         Home(1),
         L1(2),
         L2(3),
         L3(4),
-        L4(5);
-        private double value;   
+        L4(5),
+        A1(6),
+        A2(7);
+
+        private double value;
 
         private ElevatorPosition(double value) {
-          this.value = value;
+            this.value = value;
         }
-      
+
         public double getValue() {
-          return value;
+            return value;
         }
     }
+
     public ElevatorPosition currentPosition = ElevatorPosition.Home;
     public ElevatorPosition targetPosition = ElevatorPosition.L2;
 
-    // adds hall effect sensor in DIO slot 4
-    DigitalInput HallEffect = new DigitalInput(2);
-
     public ElevatorSubsystem() {
-        // Initialize the SPARK MAX motors and get their limit switch and encoder objects for later use.
+        // Initialize the SPARK MAX motors and get their limit switch and encoder
+        // objects for later use.
         motor1 = new SparkMax(1, MotorType.kBrushless);
         motor2 = new SparkMax(2, MotorType.kBrushless);
         forwardLimitSwitch1 = motor1.getForwardLimitSwitch();
@@ -72,7 +73,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         PIDConstraints = new Constraints(300, 400);
         PIDie = new ProfiledPIDController(.040, 0.01, 0, PIDConstraints);
 
-        upperLimitSwitch = new DigitalInput(4);
+        upperLimitSwitch = new DigitalInput(5);
         lowerLimitSwitch = new DigitalInput(3);
 
         // Create new SPARK MAX configuration objects.
@@ -85,30 +86,31 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         // Enable limit switches to stop the motors when they are closed
         motorConfig1.limitSwitch
-            .forwardLimitSwitchType(Type.kNormallyOpen)
-            .forwardLimitSwitchEnabled(true)
-            .reverseLimitSwitchType(Type.kNormallyOpen)
-            .reverseLimitSwitchEnabled(true);
+                .forwardLimitSwitchType(Type.kNormallyOpen)
+                .forwardLimitSwitchEnabled(true)
+                .reverseLimitSwitchType(Type.kNormallyOpen)
+                .reverseLimitSwitchEnabled(true);
         motorConfig2.limitSwitch
-            .forwardLimitSwitchType(Type.kNormallyOpen)
-            .forwardLimitSwitchEnabled(true)
-            .reverseLimitSwitchType(Type.kNormallyOpen)
-            .reverseLimitSwitchEnabled(true);
+                .forwardLimitSwitchType(Type.kNormallyOpen)
+                .forwardLimitSwitchEnabled(true)
+                .reverseLimitSwitchType(Type.kNormallyOpen)
+                .reverseLimitSwitchEnabled(true);
 
         // Set the soft limits to stop the motors at -50 and 50 rotations
-       /*  motorConfig1.softLimit
-            .forwardSoftLimit(50)
-            .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(-50)
-            .reverseSoftLimitEnabled(true);
-        motorConfig2.softLimit
-            .forwardSoftLimit(50)
-            .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(-50)
-            .reverseSoftLimitEnabled(true);
-        */
+        /*
+         * motorConfig1.softLimit
+         * .forwardSoftLimit(50)
+         * .forwardSoftLimitEnabled(true)
+         * .reverseSoftLimit(-50)
+         * .reverseSoftLimitEnabled(true);
+         * motorConfig2.softLimit
+         * .forwardSoftLimit(50)
+         * .forwardSoftLimitEnabled(true)
+         * .reverseSoftLimit(-50)
+         * .reverseSoftLimitEnabled(true);
+         */
         // Set Motor 2 to follow Motor 1
-        motorConfig2.follow(motor1);    
+        motorConfig2.follow(motor1);
 
         // Apply the configuration to the SPARK MAX motors.
         motor1.configure(motorConfig1, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -130,7 +132,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             setMotorSpeed(0);
         }
     }
-    
+
     public void moveDown() {
         // If the lower limit switch is not pressed, move the elevator down
         if (lowerLimitSwitch.get()) {
@@ -141,28 +143,30 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void setMotorSpeed(double speed) {
-        SmartDashboard.putNumber("Elevator Speed",speed );
+        SmartDashboard.putNumber("Elevator Speed", speed);
         motor1.set(speed);
     }
-    // Create a public method to get the position of the encoder in a different class
+
+    // Create a public method to get the position of the encoder in a different
+    // class
     public double getEncoder1Position() {
         return encoder1.getPosition();
     }
 
     public double TranslateEnum(ElevatorPosition elevatorPosition) {
-        if(elevatorPosition == ElevatorPosition.L1) {
+        if (elevatorPosition == ElevatorPosition.L1) {
             return -6;
-        }
-        else if(elevatorPosition == ElevatorPosition.L2) {
+        } else if (elevatorPosition == ElevatorPosition.L2) {
             return -9;
-        }
-        else if(elevatorPosition == ElevatorPosition.L3) {
+        } else if (elevatorPosition == ElevatorPosition.L3) {
             return -20.5;
-        }
-        else if(elevatorPosition == ElevatorPosition.L4) {
-            return -36.1;
-        }
-        else {
+        } else if (elevatorPosition == ElevatorPosition.L4) {
+            return -39;
+        } else if (elevatorPosition == ElevatorPosition.A1) {
+            return -6;
+        } else if (elevatorPosition == ElevatorPosition.A2) {
+            return -18;
+        } else {
             return 0;
         }
 
@@ -172,11 +176,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         PIDie.reset(getEncoder1Position());
     }
 
-
     public void setCurrentPosition(ElevatorPosition position) {
         currentPosition = position;
     }
-    
+
     public ElevatorPosition getCurrentPosition() {
         return currentPosition;
     }
@@ -189,31 +192,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         return targetPosition;
     }
 
-    //Tells us when hall effect sensor is tripped
-    public boolean isHallEffectTripped() {
-        return !HallEffect.get();
-    }
-    public boolean becameTrue(){
-        if(previousisTripped == false && currentisTripped == true){
-            return true;
-        }
-        return false;
-    }
-    public boolean becameFalse(){
-        if(previousisTripped == true && currentisTripped == false){
-            return true;
-        }
-        return false;
-    }
-    public void currentisTripped(boolean currentisTripped) {
-        this.currentisTripped = currentisTripped;
-    }
-
-    public void previousisTripped(boolean previousisTripped) {
-        this.previousisTripped = previousisTripped;
-    }
-
-    //tells us when the elevator is Home
+    // tells us when the elevator is Home
     public boolean elevatorHome() {
         return !lowerLimitSwitch.get();
     }
@@ -223,9 +202,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void placeholder(double goal) {
-       
+
         PIDie.setGoal(goal);
-        setMotorSpeed(PIDie.calculate(getEncoder1Position()) - .05);
+        setMotorSpeed(PIDie.calculate(getEncoder1Position()) - .035);
 
     }
 
@@ -235,7 +214,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("target position", getTargetPosition().getValue());
         SmartDashboard.putBoolean("is upper Limit switch triggered", maxHeight());
         SmartDashboard.putBoolean("is lower Limit switch triggered", elevatorHome());
-        SmartDashboard.putBoolean("Hall Effect Sensor Tripped", isHallEffectTripped());
         // Display data from SPARK onto the dashboard
         SmartDashboard.putBoolean("Forward Limit Reached Motor 1", forwardLimitSwitch1.isPressed());
         SmartDashboard.putBoolean("Reverse Limit Reached Motor 1", reverseLimitSwitch1.isPressed());
@@ -245,6 +223,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Applied Output Motor 2", motor2.getAppliedOutput());
         SmartDashboard.putNumber("Position Motor 1", encoder1.getPosition());
         SmartDashboard.putNumber("Position Motor 2", encoder2.getPosition());
-        
+
     }
 }

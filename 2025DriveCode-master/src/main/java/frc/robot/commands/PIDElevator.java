@@ -29,7 +29,7 @@ public class PIDElevator extends Command {
 
     @Override
     public boolean isFinished() {
-        if (Math.abs(m_elevator.getEncoder1Position() - m_elevator.TranslateEnum(targetPosition)) < 0.5) {
+        if (Math.abs(m_elevator.getEncoder1Position() - m_elevator.TranslateEnum(targetPosition)) < 0.8) {
             return true;
         }
         return false;
@@ -37,7 +37,7 @@ public class PIDElevator extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        m_elevator.setMotorSpeed(-0.050);
+        m_elevator.setMotorSpeed(-0.0350);
     }
 
 }

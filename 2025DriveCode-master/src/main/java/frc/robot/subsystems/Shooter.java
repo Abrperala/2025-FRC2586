@@ -20,8 +20,8 @@ public class Shooter extends SubsystemBase {
     private final TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     //make shooter beans
     DigitalInput beamBreak = new DigitalInput(1);
-    //make Algae Limit Switch (non-existant at the moment)
-    DigitalInput AlgaeLimitSwitch = new DigitalInput(0);
+    //make Algae Limit Switch (existant at the moment)
+    DigitalInput AlgaeLimitSwitch = new DigitalInput(4);
 
     public Shooter() {
 

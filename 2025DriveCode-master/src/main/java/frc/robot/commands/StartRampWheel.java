@@ -14,7 +14,7 @@ public class StartRampWheel extends Command {
 
     @Override
     public void initialize() {
-        m_ramp.setRampSpeed(0.2);
+        m_ramp.setRampSpeed(0.35);
     }
 
     @Override
