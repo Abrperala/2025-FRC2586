@@ -37,6 +37,7 @@ import frc.robot.commands.OutakeAlgae;
 import frc.robot.commands.PIDElevator;
 import frc.robot.commands.PIDWrist;
 import frc.robot.subsystems.ElevatorSubsystem.ElevatorPosition;
+import frc.robot.subsystems.PhotonCam;
 //import frc.robot.commands.LiftElevToHallEffect;
 import frc.robot.commands.HoldElev;
 import frc.robot.commands.ShootCoral;
@@ -65,6 +66,8 @@ public class RobotContainer {
                         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
                         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive
                                                                                  // motors
+        private final SwerveRequest.RobotCentric rcDrive = new SwerveRequest.RobotCentric().withDeadband(MaxSpeed * 0.1)
+                        .withRotationalDeadband(MaxAngularRate * 0.1);
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
         private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -80,6 +83,7 @@ public class RobotContainer {
         private final WristSubSystem wristSubsystem = new WristSubSystem();
         private final RampSubSystem rampSubsystem = new RampSubSystem();
         private final Shooter shooter = new Shooter();
+        public final PhotonCam cam = new PhotonCam();
 
         public RobotContainer() {
                 configureBindings();
@@ -135,15 +139,15 @@ public class RobotContainer {
                 // reset the field-centric heading on share button press
                 new JoystickButton(driverJoystick, 9).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-                // Driver Left Bumper bind to strafe left TODO: check if actually moves left
+                // Driver Left Bumper bind to strafe left t
                 new JoystickButton(driverJoystick, 5).whileTrue(
                                 drivetrain
-                                                .applyRequest(() -> drive.withVelocityX(0) // Drive
-                                                                                           // forward
-                                                                                           // with
-                                                                                           // negative
-                                                                                           // Y
-                                                                                           // (forward)
+                                                .applyRequest(() -> rcDrive.withVelocityX(0) // Drive
+                                                                                             // forward
+                                                                                             // with
+                                                                                             // negative
+                                                                                             // Y
+                                                                                             // (forward)
                                                                 .withVelocityY(.2 * MaxSpeed) // Drive left
                                                                 // with negative
                                                                 // X (left)
@@ -155,16 +159,54 @@ public class RobotContainer {
                                                                                        // (left)
                                                 ));
 
-                // Driver Right Bumper bind to strafe right TODO: check if actually moves right
+                // Driver Right Bumper bind to strafe right
                 new JoystickButton(driverJoystick, 6).whileTrue(
                                 drivetrain
-                                                .applyRequest(() -> drive.withVelocityX(0) // Drive
-                                                                                           // forward
-                                                                                           // with
-                                                                                           // negative
-                                                                                           // Y
-                                                                                           // (forward)
+                                                .applyRequest(() -> rcDrive.withVelocityX(0) // Drive
+                                                                                             // forward
+                                                                                             // with
+                                                                                             // negative
+                                                                                             // Y
+                                                                                             // (forward)
                                                                 .withVelocityY(-.2 * MaxSpeed) // Drive left
+                                                                // with negative
+                                                                // X (left)
+                                                                .withRotationalRate(0) // Drive
+                                                                                       // counterclockwise
+                                                                                       // with
+                                                                                       // negative
+                                                                                       // X
+                                                                                       // (left)
+                                                ));
+                // Driver right Trigger bind to strafe forward
+                new JoystickButton(driverJoystick, 8).whileTrue(
+                                drivetrain
+                                                .applyRequest(() -> rcDrive.withVelocityX(.2 * MaxSpeed) // Drive
+                                                                // forward
+                                                                // with
+                                                                // negative
+                                                                // Y
+                                                                // (forward)
+                                                                .withVelocityY(0) // Drive left
+                                                                // with negative
+                                                                // X (left)
+                                                                .withRotationalRate(0) // Drive
+                                                                                       // counterclockwise
+                                                                                       // with
+                                                                                       // negative
+                                                                                       // X
+                                                                                       // (left)
+                                                ));
+                // Driver left Trigger bind to strafe backward
+                new JoystickButton(driverJoystick, 7).whileTrue(
+                                drivetrain
+                                                .applyRequest(() -> rcDrive.withVelocityX(-.2 * MaxSpeed) // Drive
+                                                                // forward
+                                                                // with
+                                                                // negative
+                                                                // Y
+                                                                // (forward)
+                                                                .withVelocityY(0) // Drive left
                                                                 // with negative
                                                                 // X (left)
                                                                 .withRotationalRate(0) // Drive
@@ -255,12 +297,18 @@ public class RobotContainer {
                                                                 .setCurrentPosition(WristPosition.HOME),
                                                                 wristSubsystem).withTimeout(0.3),
                                                 new PIDElevator(ElevatorPosition.L4, elevatorSubsystem),
-                                                new WaitCommand(.5),
+                                                new RunCommand(() -> wristSubsystem
+                                                                .setCurrentPosition(WristPosition.CORALL4),
+                                                                wristSubsystem).withTimeout(.5),
                                                 new ShootCoral(shooter)));
 
                 // Bind Operator touchpad button to Home
                 new JoystickButton(operatorJoystick, 14).onTrue(
                                 new SequentialCommandGroup(
+                                                new StopShooterWheel(shooter),
+                                                new RunCommand(() -> wristSubsystem
+                                                                .setCurrentPosition(WristPosition.HOME),
+                                                                wristSubsystem).withTimeout(0.3),
                                                 new PIDElevator(ElevatorPosition.Home, elevatorSubsystem),
                                                 new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0.035),
                                                                 elevatorSubsystem).withTimeout(.3),
@@ -281,6 +329,9 @@ public class RobotContainer {
                                                                 .setCurrentPosition(WristPosition.ALGAEPICKUP),
                                                                 wristSubsystem).withTimeout(.1),
                                                 new IntakeAlgae(shooter),
+                                                new RunCommand(() -> shooter.setShooterSpeed(.2), shooter)
+                                                                .withTimeout(.3),
+
                                                 new RunCommand(() -> wristSubsystem
                                                                 .setCurrentPosition(WristPosition.HOME),
                                                                 wristSubsystem).withTimeout(0.1)));

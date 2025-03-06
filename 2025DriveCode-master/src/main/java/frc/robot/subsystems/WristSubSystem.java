@@ -56,7 +56,7 @@ public class WristSubSystem extends SubsystemBase {
 
   public double TranslateEnum(WristPosition wristPosition) {
     if (wristPosition == WristPosition.CORALL4) {
-      return .353;
+      return .335;
     } else if (wristPosition == WristPosition.ALGAEPICKUP) {
       return .436; // TODO: change to correct
     } else if (wristPosition == WristPosition.ALGAESHOOT) {
