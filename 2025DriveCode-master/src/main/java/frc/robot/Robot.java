@@ -25,13 +25,13 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // Optional<EstimatedRobotPose> pose = m_robotContainer.cam.getRobotPose();
-    // if (pose.isPresent()) {
-    // //
-    // m_robotContainer.drivetrain.addVisionMeasurement(pose.get().estimatedPose.toPose2d(),
-    // // pose.get().timestampSeconds);
+    Optional<EstimatedRobotPose> pose = m_robotContainer.cam.getRobotPose();
+    if (pose.isPresent()) {
 
-    // }
+      m_robotContainer.drivetrain.addVisionMeasurement(pose.get().estimatedPose.toPose2d(),
+          pose.get().timestampSeconds);
+
+    }
   }
 
   @Override

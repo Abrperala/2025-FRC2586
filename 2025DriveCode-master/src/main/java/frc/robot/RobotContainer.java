@@ -11,12 +11,15 @@ import java.lang.management.OperatingSystemMXBean;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.fasterxml.jackson.databind.SequenceWriter;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -85,7 +88,15 @@ public class RobotContainer {
         private final Shooter shooter = new Shooter();
         public final PhotonCam cam = new PhotonCam();
 
+        private final SendableChooser<Command> autoChooser;
+
         public RobotContainer() {
+
+                configureAutos();
+
+                autoChooser = AutoBuilder.buildAutoChooser("Blank");
+                SmartDashboard.putData("Auto Mode", autoChooser);
+
                 configureBindings();
         }
 
@@ -96,6 +107,31 @@ public class RobotContainer {
                 } else {
                         return Math.pow(input, 2);
                 }
+        }
+
+        private void configureAutos() {
+
+                NamedCommands.registerCommand("l4", new SequentialCommandGroup(
+                                new RunCommand(() -> wristSubsystem
+                                                .setCurrentPosition(WristPosition.HOME),
+                                                wristSubsystem).withTimeout(0.3),
+                                new PIDElevator(ElevatorPosition.L4, elevatorSubsystem),
+                                new RunCommand(() -> wristSubsystem
+                                                .setCurrentPosition(WristPosition.CORALL4),
+                                                wristSubsystem).withTimeout(.5),
+                                new ShootCoral(shooter)));
+
+                NamedCommands.registerCommand("Home", new SequentialCommandGroup(
+                                new StopShooterWheel(shooter),
+                                new RunCommand(() -> wristSubsystem
+                                                .setCurrentPosition(WristPosition.HOME),
+                                                wristSubsystem).withTimeout(0.3),
+                                new PIDElevator(ElevatorPosition.Home, elevatorSubsystem),
+                                new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0.035),
+                                                elevatorSubsystem).withTimeout(.3),
+                                new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0),
+                                                elevatorSubsystem).withTimeout(0.1)));
+
         }
 
         private void configureBindings() {
@@ -319,7 +355,25 @@ public class RobotContainer {
                 new JoystickButton(operatorJoystick, 7).onTrue(
                                 new ShootCoral(shooter));
 
-                new JoystickButton(operatorJoystick, 6).onTrue(
+                // Bind intake Algae A1 button to down POV
+                new POVButton(operatorJoystick, 180).onTrue(
+                                new SequentialCommandGroup(
+                                                new RunCommand(() -> wristSubsystem
+                                                                .setCurrentPosition(WristPosition.HOME),
+                                                                wristSubsystem).withTimeout(0.3),
+                                                new PIDElevator(ElevatorPosition.A1, elevatorSubsystem),
+                                                new RunCommand(() -> wristSubsystem
+                                                                .setCurrentPosition(WristPosition.ALGAEPICKUP),
+                                                                wristSubsystem).withTimeout(.1),
+                                                new IntakeAlgae(shooter),
+                                                new RunCommand(() -> shooter.setShooterSpeed(.2), shooter)
+                                                                .withTimeout(.3),
+
+                                                new RunCommand(() -> wristSubsystem
+                                                                .setCurrentPosition(WristPosition.HOME),
+                                                                wristSubsystem).withTimeout(0.1)));
+                // Bind intake Algae A2 button to Up POV
+                new POVButton(operatorJoystick, 0).onTrue(
                                 new SequentialCommandGroup(
                                                 new RunCommand(() -> wristSubsystem
                                                                 .setCurrentPosition(WristPosition.HOME),
@@ -335,7 +389,7 @@ public class RobotContainer {
                                                 new RunCommand(() -> wristSubsystem
                                                                 .setCurrentPosition(WristPosition.HOME),
                                                                 wristSubsystem).withTimeout(0.1)));
-
+                // Bind Outake Algae in Barge to left Bumper
                 new JoystickButton(operatorJoystick, 5).onTrue(
                                 new SequentialCommandGroup(
                                                 new RunCommand(() -> wristSubsystem
@@ -351,9 +405,18 @@ public class RobotContainer {
                                                                 wristSubsystem).withTimeout(1),
                                                 new PIDElevator(ElevatorPosition.Home, elevatorSubsystem)));
 
+                // Bind Outake Algae to Right Bumper
+                new JoystickButton(operatorJoystick, 6).onTrue(
+                                new SequentialCommandGroup(
+                                                new RunCommand(() -> wristSubsystem
+                                                                .setCurrentPosition(WristPosition.HOME),
+                                                                wristSubsystem).withTimeout(0.3),
+                                                new OutakeAlgae(shooter).withTimeout(.5)));
+
         }
 
         public Command getAutonomousCommand() {
-                return Commands.print("No autonomous command configured");
+                return autoChooser.getSelected();
         }
+
 }

@@ -163,7 +163,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         } else if (elevatorPosition == ElevatorPosition.L4) {
             return -38;
         } else if (elevatorPosition == ElevatorPosition.A1) {
-            return -6;
+            return -8.5;
         } else if (elevatorPosition == ElevatorPosition.A2) {
             return -19;
         } else {
