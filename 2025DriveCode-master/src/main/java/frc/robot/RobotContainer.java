@@ -44,6 +44,7 @@ import frc.robot.subsystems.PhotonCam;
 //import frc.robot.commands.LiftElevToHallEffect;
 import frc.robot.commands.HoldElev;
 import frc.robot.commands.ShootCoral;
+import frc.robot.commands.SlowShootCoral;
 import frc.robot.commands.StartRampWheel;
 import frc.robot.commands.StartShooterWheel;
 import frc.robot.commands.StopRampWheel;
@@ -114,23 +115,32 @@ public class RobotContainer {
                 NamedCommands.registerCommand("l4", new SequentialCommandGroup(
                                 new RunCommand(() -> wristSubsystem
                                                 .setCurrentPosition(WristPosition.HOME),
-                                                wristSubsystem).withTimeout(0.3),
+                                                wristSubsystem).withTimeout(0.1),
                                 new PIDElevator(ElevatorPosition.L4, elevatorSubsystem),
-                                new RunCommand(() -> wristSubsystem
-                                                .setCurrentPosition(WristPosition.CORALL4),
-                                                wristSubsystem).withTimeout(.5),
+                                new WaitCommand(.3),
                                 new ShootCoral(shooter)));
 
                 NamedCommands.registerCommand("Home", new SequentialCommandGroup(
                                 new StopShooterWheel(shooter),
                                 new RunCommand(() -> wristSubsystem
                                                 .setCurrentPosition(WristPosition.HOME),
-                                                wristSubsystem).withTimeout(0.3),
+                                                wristSubsystem).withTimeout(0.1),
                                 new PIDElevator(ElevatorPosition.Home, elevatorSubsystem),
-                                new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0.035),
-                                                elevatorSubsystem).withTimeout(.3),
                                 new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0),
                                                 elevatorSubsystem).withTimeout(0.1)));
+
+                NamedCommands.registerCommand("Intake", new SequentialCommandGroup(
+                                new PIDElevator(ElevatorPosition.Home, elevatorSubsystem),
+                                new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0),
+                                                elevatorSubsystem).withTimeout(0.1),
+                                new ParallelCommandGroup(
+                                                new AdvToShooter(shooter),
+                                                new StartRampWheel(rampSubsystem)),
+                                new ParallelCommandGroup(
+                                                new StopRampWheel(rampSubsystem),
+                                                new StartShooterWheel(shooter)),
+                                new WaitCommand(.1),
+                                new StopShooterWheel(shooter)));
 
         }
 
@@ -333,9 +343,7 @@ public class RobotContainer {
                                                                 .setCurrentPosition(WristPosition.HOME),
                                                                 wristSubsystem).withTimeout(0.3),
                                                 new PIDElevator(ElevatorPosition.L4, elevatorSubsystem),
-                                                new RunCommand(() -> wristSubsystem
-                                                                .setCurrentPosition(WristPosition.CORALL4),
-                                                                wristSubsystem).withTimeout(.5),
+                                                new WaitCommand(.3),
                                                 new ShootCoral(shooter)));
 
                 // Bind Operator touchpad button to Home
@@ -349,11 +357,13 @@ public class RobotContainer {
                                                 new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0.035),
                                                                 elevatorSubsystem).withTimeout(.3),
                                                 new RunCommand(() -> elevatorSubsystem.setMotorSpeed(0),
-                                                                elevatorSubsystem).withTimeout(0.1)));
+                                                                elevatorSubsystem).withTimeout(0.1),
+                                                new RunCommand(() -> elevatorSubsystem.resetEncoders(),
+                                                                elevatorSubsystem).withTimeout(.5)));
 
                 // Bind Operator left trigger to shoot coral
                 new JoystickButton(operatorJoystick, 7).onTrue(
-                                new ShootCoral(shooter));
+                                new SlowShootCoral(shooter));
 
                 // Bind intake Algae A1 button to down POV
                 new POVButton(operatorJoystick, 180).onTrue(

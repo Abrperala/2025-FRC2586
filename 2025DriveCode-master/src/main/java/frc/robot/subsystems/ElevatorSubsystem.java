@@ -42,7 +42,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         L3(4),
         L4(5),
         A1(6),
-        A2(7);
+        A2(7),
+        INTAKE(8);
 
         private double value;
 
@@ -71,7 +72,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         encoder2 = motor2.getEncoder();
 
         PIDConstraints = new Constraints(300, 400);
-        PIDie = new ProfiledPIDController(.040, 0.02, 0, PIDConstraints);
+        PIDie = new ProfiledPIDController(.040, 0.03, 0, PIDConstraints);
 
         upperLimitSwitch = new DigitalInput(5);
         lowerLimitSwitch = new DigitalInput(3);
@@ -157,9 +158,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         if (elevatorPosition == ElevatorPosition.L1) {
             return -6;
         } else if (elevatorPosition == ElevatorPosition.L2) {
-            return -10.0;
+            return -11.417;
         } else if (elevatorPosition == ElevatorPosition.L3) {
-            return -21;
+            return -22;
         } else if (elevatorPosition == ElevatorPosition.L4) {
             return -38;
         } else if (elevatorPosition == ElevatorPosition.A1) {
@@ -199,6 +200,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public boolean maxHeight() {
         return !upperLimitSwitch.get();
+    }
+
+    public void resetEncoders() {
+        if (elevatorHome()) {
+            encoder1.setPosition(0);
+            encoder2.setPosition(0);
+        }
     }
 
     public void placeholder(double goal) {

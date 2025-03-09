@@ -25,13 +25,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left path 2"
+            "pathName": "Left Path 2"
           }
         }
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": false
 }
